@@ -38,8 +38,61 @@ retrieval_function <- function(scheme_name){
                        fields = '{"_id" : 0}')
   scheme_id
 }
+
+
+# Getting all database data -----------------------------------------------
+all_db_data <- function(){
+  scheme_data <- db$find()
+  scheme_data
+}
+
+
+# Loading data in DB ------------------------------------------------------
+loadData <- function() {
+  # Connect to the database
+  db <- mongo(collection = collectionName,
+              url = sprintf(
+                "mongodb://%s/%s",
+                options()$mongodb$host,
+                databaseName))
+  # Read all the entries
+  data <- db$find()
+  data
+}
+
+
+# Schemes first interaction with the database -----------------------------
+
+firstWrite <- function(data) {
+  # Connect to the database
+  db <- mongo(collection = collectionName,
+              url = sprintf(
+                "mongodb://%s/%s",
+                options()$mongodb$host,
+                databaseName))
+  # Insert the data into the mongo collection as a data.frame
+  # data <- as.data.frame(t(data))
+  db$insert(data)
+}
+
+
+
+# All fields of the database ----------------------------------------------
+scheme_table <- loadData()
+# browser()
+if(nrow(scheme_table)  == 0){
+  scheme_table <- data.frame(matrix(data = '-', ncol = length(fieldsAll)))
+  names(scheme_table)[] <- fieldsAll
+}
+scheme_table[is.na(scheme_table)] <- '-'
+
+# Server code -------------------------------------------------------------
+
+
 server <- shinyServer(function(session, input, output) {
-  scheme_id <- renderPrint(retrieval_function('new one'))
   
+  output$scheme_id <- renderText(db$aggregate()$scheme_name)
 })
+
+
 shinyApp(ui,server)
