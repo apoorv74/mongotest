@@ -21,7 +21,7 @@ db <- mongo(collection = collectionName,
 body <- dashboardBody(
   useShinyjs(),
   tabItems(
-    tabItem("num1",tags$div('apoorv'))))
+    tabItem("num1",uiOutput('scheme_id'))))
 
 ui <- dashboardPage(
   dashboardHeader(title = tags$a(href='http://socialcops.com',
@@ -33,6 +33,13 @@ ui <- dashboardPage(
   
   body
 )
-
-server <- shinyServer(function(session, input, output) {})
+retrieval_function <- function(scheme_name){
+  scheme_id <- db$find(query = paste0('{"scheme_name" : "',scheme_name,'" }'), 
+                       fields = '{"_id" : 0}')
+  scheme_id
+}
+server <- shinyServer(function(session, input, output) {
+  scheme_id <- renderPrint(retrieval_function('new one'))
+  
+})
 shinyApp(ui,server)
